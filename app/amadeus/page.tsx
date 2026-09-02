@@ -1,9 +1,27 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import QuestionsAdmin from '../../components/admin/QuestionsAdmin';
+import AttractionsAdmin from '../../components/admin/AttractionsAdmin';
+import ResponsesAdmin from '../../components/admin/ResponsesAdmin';
+import StatsAdmin from '../../components/admin/StatsAdmin';
 
 export default function AdminPage() {
   const [tab, setTab] = useState<'questions' | 'attractions' | 'responses' | 'stats'>('questions');
+  const router = useRouter();
+
+  useEffect(() => {
+    // client-side guard: require localStorage flag set by input-page logo tap
+    try {
+      const unlocked = typeof window !== 'undefined' && localStorage.getItem('amadeus_unlocked') === '1';
+      if (!unlocked) {
+        router.replace('/');
+      }
+    } catch (e) {
+      // if any error, be conservative and redirect
+      router.replace('/');
+    }
+  }, [router]);
 
   return (
     <main className="min-h-screen bg-gray-50 p-4">
@@ -20,9 +38,9 @@ export default function AdminPage() {
 
         <section>
           {tab === 'questions' && <QuestionsAdmin />}
-          {tab === 'attractions' && <div className="p-6 bg-white rounded shadow">出し物管理（次フェーズで実装）</div>}
-          {tab === 'responses' && <div className="p-6 bg-white rounded shadow">回答一覧（次フェーズで実装）</div>}
-          {tab === 'stats' && <div className="p-6 bg-white rounded shadow">集計（次フェーズで実装）</div>}
+          {tab === 'attractions' && <AttractionsAdmin />}
+          {tab === 'responses' && <ResponsesAdmin />}
+          {tab === 'stats' && <StatsAdmin />}
         </section>
       </div>
     </main>
