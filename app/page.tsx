@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import RatingStars from '../components/RatingStars';
 
@@ -25,6 +25,9 @@ export default function Page() {
   const [ratings, setRatings] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+
+  const tapRef = useRef(0);
+  const lastTapAt = useRef<number | null>(null);
 
   useEffect(() => {
     fetchInitial();
@@ -103,10 +106,31 @@ export default function Page() {
     setTimeout(() => setMessage(null), 1200);
   }
 
+  // logo tap handler: 10 taps within 5 seconds unlocks admin
+  function onLogoTap() {
+    const now = Date.now();
+    if (lastTapAt.current && now - lastTapAt.current > 5000) {
+      tapRef.current = 0;
+    }
+    lastTapAt.current = now;
+    tapRef.current += 1;
+    if (tapRef.current >= 10) {
+      try {
+        localStorage.setItem('amadeus_unlocked', '1');
+      } catch (e) { }
+      window.location.href = '/amadeus';
+    }
+  }
+
   return (
     <main className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-3xl mx-auto">
-        <h1 className="text-2xl font-bold mb-4">天爽祭 投票入力</h1>
+        <header className="flex items-center justify-between mb-4">
+          <h1 className="text-2xl font-bold">天爽祭 投票入力</h1>
+          <div onClick={onLogoTap} className="p-2 rounded cursor-pointer select-none">{/* logo placeholder */}
+            <div className="text-sm text-gray-500">ロゴ</div>
+          </div>
+        </header>
 
         <label className="block mb-2">出し物</label>
         <select className="w-full p-3 mb-4 rounded-md border" value={selectedAttraction ?? ''} onChange={(e) => setSelectedAttraction(e.target.value)}>
